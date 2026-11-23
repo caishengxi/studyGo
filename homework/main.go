@@ -6,26 +6,41 @@ import (
 )
 
 func findOnetimenumber(numbers []int) int {
+	if len(numbers) == 0 {
+		return -1
+	}
 
 	numberCount := make(map[int]int)
 	for _, number := range numbers {
 		numberCount[number]++
 	}
 
+	uniqueNumber := 0
+	foundUnique := false
 	for number, count := range numberCount {
 		if count == 1 {
-			return number
+			if foundUnique {
+				return -1
+			}
+			uniqueNumber = number
+			foundUnique = true
+		} else if count != 2 {
+			return -1
 		}
 	}
 
-	return -1
+	if !foundUnique {
+		return -1
+	}
+	return uniqueNumber
 }
 
 // 第二题：判断一个字符串是回文数
 func isPalindrome(s string) bool {
-	left, right := 0, len(s)-1
+	characters := []rune(s)
+	left, right := 0, len(characters)-1
 	for left < right {
-		if s[left] != s[right] {
+		if characters[left] != characters[right] {
 			return false
 		}
 		left++
@@ -37,11 +52,14 @@ func isPalindrome(s string) bool {
 
 // kuohaoMatch 判断括号是否匹配
 func kuohaoMatch(s string) bool {
-	arraystr := []rune{}
+	arraystr := make([]rune, 0, len(s))
 	for _, char := range s {
 		if char == '(' || char == '[' || char == '{' {
 			arraystr = append(arraystr, char)
 		} else {
+			if char != ')' && char != ']' && char != '}' {
+				return false
+			}
 			if len(arraystr) == 0 {
 				return false
 			}
@@ -67,62 +85,79 @@ func kuohaoMatch(s string) bool {
 }
 
 func findstrcommonprestr(strs []string) string {
-	//先找出最短的字符串
 	if len(strs) == 0 {
 		return ""
 	}
 
-	shortest := strs[0]
-	for _, str := range strs {
-		if len(str) < len(shortest) {
-			shortest = str
+	shortest := []rune(strs[0])
+	for _, str := range strs[1:] {
+		characters := []rune(str)
+		if len(characters) < len(shortest) {
+			shortest = characters
 		}
 	}
 
-	for i := 0; i < len(shortest); i++ {
-		char := shortest[i]
+	for i, character := range shortest {
 		for _, str := range strs {
-			if str[i] != char {
-				return shortest[:i]
+			characters := []rune(str)
+			if characters[i] != character {
+				return string(shortest[:i])
 			}
 		}
 	}
 
-	return ""
+	return string(shortest)
 }
 
 func plusOne(digits []int) int {
-
-	arraylen := len(digits)
-	result := 0
-	for i := 0; i < arraylen; i++ {
-		result = result*10 + digits[i]
+	if len(digits) == 0 {
+		return -1
 	}
-	result++
-	return result
 
+	maxInt := int(^uint(0) >> 1)
+	result := 0
+	for _, digit := range digits {
+		if digit < 0 || digit > 9 || result > (maxInt-digit)/10 {
+			return -1
+		}
+		result = result*10 + digit
+	}
+	if result == maxInt {
+		return -1
+	}
+	return result + 1
 }
 
 func removeDuplicates(nums []int) int {
-	pinteri := 0
-	pointerj := 1
-	for pointerj < len(nums) {
-		if nums[pinteri] != nums[pointerj] {
-			nums[pinteri+1] = nums[pointerj]
-			pinteri++
-		}
-		pointerj++
+	if len(nums) == 0 {
+		return 0
 	}
-	return pinteri + 1
+	for i := 1; i < len(nums); i++ {
+		if nums[i] < nums[i-1] {
+			return 0
+		}
+	}
 
+	uniqueCount := 1
+	for i := 1; i < len(nums); i++ {
+		if nums[i] != nums[uniqueCount-1] {
+			nums[uniqueCount] = nums[i]
+			uniqueCount++
+		}
+	}
+	return uniqueCount
 }
 
 func merge(intervals [][]int) [][]int {
 	if len(intervals) == 0 {
 		return [][]int{}
 	}
+	for _, interval := range intervals {
+		if len(interval) != 2 || interval[0] > interval[1] {
+			return [][]int{}
+		}
+	}
 
-	// 先对区间进行排序
 	sort.Slice(intervals, func(i, j int) bool {
 		return intervals[i][0] < intervals[j][0]
 	})
@@ -143,9 +178,13 @@ func merge(intervals [][]int) [][]int {
 }
 
 func twoSum(nums []int, target int) []int {
+	if len(nums) < 2 {
+		return []int{}
+	}
 	for i := 0; i < len(nums); i++ {
 		for j := i + 1; j < len(nums); j++ {
-			if nums[i]+nums[j] == target {
+			sum := nums[i] + nums[j]
+			if (nums[j] <= 0 || sum >= nums[i]) && (nums[j] >= 0 || sum <= nums[i]) && sum == target {
 				return []int{i, j}
 			}
 		}

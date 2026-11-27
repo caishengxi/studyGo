@@ -1,0 +1,7 @@
+go 1.27.4
+
+use (
+	./homework/homework_01
+	./homework/homework_02
+	./homework/homework_03
+)
